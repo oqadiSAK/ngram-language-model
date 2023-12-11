@@ -1,3 +1,6 @@
+# PROJECT DOCS
+report.pdf
+
 # DATASET AND OUTPUT
 data/*
 !data/README.md
