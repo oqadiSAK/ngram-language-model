@@ -1,4 +1,4 @@
-### DATASET:
+### DATA:
 
 You can find the dataset [here](https://www.kaggle.com/datasets/mustfkeskin/turkish-wikipedia-dump) on Kaggle as a public Turkish Wikipedia dump. To run the project, download the data and place the file "wiki_00" within the dataset folder here.
 

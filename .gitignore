@@ -1,6 +1,6 @@
 # DATASET AND OUTPUT
-dataset/*
-!dataset/README.md
+data/*
+!data/README.md
 
 output/*
 !output/README.md
