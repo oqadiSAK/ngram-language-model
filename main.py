@@ -15,7 +15,7 @@ def calculate_perplexity(model, sentences):
                 i += 1
     print("Perplexity is calculated for the test sentences. You can find it in output/perplexity_output")
 
-def random_sentence_generate(model, rounds=3):
+def random_sentence_generate(model, rounds=15):
     with open("output/random_sentences_output", "w", encoding='utf-8') as output_file:
         for round_num in range(1, rounds + 1):
             output_file.write(f"Round {round_num}:\n")
