@@ -1,5 +1,9 @@
-# DATASET
-**/wiki_00*
+# DATASET AND OUTPUT
+dataset/*
+!dataset/README.md
+
+output/*
+!output/README.md
 
 # REGULAR PYTHON GITIGNORE CONTENT
 
