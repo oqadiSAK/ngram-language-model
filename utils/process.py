@@ -18,9 +18,16 @@ TEST_OUTPUT_PATH = "output/test_processed_data"
 TOTAL_NUMBER_OF_LINES = 4547965
 
 def preprocess(percentage=100):
-    train_number_of_lines, test_number_of_lines = split_train_test(percentage)
-    process_data(TRAIN_PATH, TRAIN_OUTPUT_PATH, train_number_of_lines, "Preprocessing train data")
-    process_data(TEST_PATH, TEST_OUTPUT_PATH, test_number_of_lines, "Preprocessing test data")
+    train_number_of_lines, test_number_of_lines = _split_train_test(percentage)
+    _process_data(TRAIN_PATH, TRAIN_OUTPUT_PATH, train_number_of_lines, "Preprocessing train data")
+    _process_data(TEST_PATH, TEST_OUTPUT_PATH, test_number_of_lines, "Preprocessing test data")
+
+def postprocess(tokens):
+    processed_text = ''.join(tokens)
+    processed_text = processed_text.replace(' ', '')
+    processed_text = processed_text.replace('</s>', '')
+    processed_text = processed_text.replace('</w>', ' ')
+    return processed_text
 
 def get_train_data():
     with open(TRAIN_OUTPUT_PATH, "r", encoding="utf-8") as file:
@@ -32,17 +39,17 @@ def get_test_data():
         test_text = file.read()
     return test_text
 
-def process_data(file_path, output_path, number_of_lines, description):
+def _process_data(file_path, output_path, number_of_lines, description):
     with open(file_path, "r", encoding="utf-8") as f, open(output_path, "w", encoding="utf-8") as output_file:
         for line_number, line in enumerate(tqdm(f, total=number_of_lines, desc=description), 1):
             if line.isspace() or line_number > number_of_lines:
                 continue
             
             line = line.strip()
-            text = syllabify_text(html2text(line).lower().rstrip())
+            text = _syllabify_text(html2text(line).lower().rstrip())
             output_file.write(text)
 
-def split_train_test(corpora_usage_percentage, test_percentage=5):
+def _split_train_test(corpora_usage_percentage, test_percentage=5):
     print("Splitting train and test data...")
     total_lines = int(TOTAL_NUMBER_OF_LINES * (corpora_usage_percentage / 100))
     test_lines_count = int(total_lines * test_percentage / 100)
@@ -61,7 +68,7 @@ def split_train_test(corpora_usage_percentage, test_percentage=5):
 
     return train_lines_count, test_lines_count
         
-def syllabify_text(text):
+def _syllabify_text(text):
     words = WORD_SPLIT_PATTERN.findall(text)
     syllabified_text = ''
 
@@ -75,10 +82,3 @@ def syllabify_text(text):
                 syllabified_text = syllabified_text[:last_occurrence] + ' ' + END_OF_SENTENCE + ' '
 
     return syllabified_text
-
-def postprocess(tokens):
-    processed_text = ''.join(tokens)
-    processed_text = processed_text.replace(' ', '')
-    processed_text = processed_text.replace('</s>', '')
-    processed_text = processed_text.replace('</w>', ' ')
-    return processed_text

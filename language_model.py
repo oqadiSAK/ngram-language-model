@@ -12,10 +12,12 @@ class LanguageModel():
         self._init_trigram()
         
     def _init_unigram(self, tokens):
+        print("Setting unigrams...")
         self.tokens = tokens
         self.unigrams = list((nltk.ngrams(self.tokens, 1)))
         self.unigram_table = Counter(self.unigrams)
         self.unigram_count_occurrences = count_occurrences(self.unigram_table)
+        print("Applying smoothing to unigrams...")
         self.unigram_frequencies, self.unigram_zero_counts = smoothing(self.unigram_count_occurrences, self.unigram_table)
         with open('output/unigram_frequencies', 'w', encoding='utf-8') as file:
             for key, value in self.unigram_frequencies.items():
@@ -23,9 +25,11 @@ class LanguageModel():
                 file.write(f'{key_str}: {value}\n')
     
     def _init_bigram(self):
+        print("Setting bigrams...")
         self.bigrams = list((nltk.ngrams(self.tokens, 2)))
         self.bigram_table = Counter(self.bigrams)
         self.bigram_count_occurrences = count_occurrences(self.bigram_table)
+        print("Applying smoothing to bigrams...")
         self.bigram_frequencies, self.bigram_zero_counts = smoothing(self.bigram_count_occurrences, self.bigram_table)
         with open('output/bigram_frequencies', 'w', encoding='utf-8') as file:
             for key, value in self.bigram_frequencies.items():
@@ -33,26 +37,28 @@ class LanguageModel():
                 file.write(f'{key_str}: {value}\n')
     
     def _init_trigram(self):
+        print("Setting trigrams...")
         self.trigrams = list((nltk.ngrams(self.tokens, 3)))
         self.trigram_table = Counter(self.trigrams)
         self.trigram_count_occurrences = count_occurrences(self.trigram_table)
+        print("Applying smoothing to trigrams...")
         self.trigram_frequencies, self.trigram_zero_counts = smoothing(self.trigram_count_occurrences, self.trigram_table)
         with open('output/trigram_frequencies', 'w', encoding='utf-8') as file:
             for key, value in self.trigram_frequencies.items():
                 key_str = ', '.join(key)  
                 file.write(f'{key_str}: {value}\n')
                         
-    def unigram_probability(self, syllable):
+    def _unigram_probability(self, syllable):
         numerator = self.unigram_frequencies.get(syllable, self.unigram_zero_counts)
         denominator = len(self.unigrams)
         return float(numerator) / float(denominator)
     
-    def bigram_probability(self, prev, curr):
+    def _bigram_probability(self, prev, curr):
         numerator = self.bigram_frequencies.get((prev, curr), self.bigram_zero_counts)
         denominator = self.unigram_frequencies.get((prev,), self.unigram_zero_counts)
         return float(numerator) / float(denominator)
 
-    def trigram_probability(self, prev1, prev2, curr):
+    def _trigram_probability(self, prev1, prev2, curr):
         numerator = self.trigram_frequencies.get((prev1, prev2, curr), self.trigram_zero_counts)
         denominator = self.bigram_frequencies.get((prev1, prev2), self.bigram_zero_counts)
         return float(numerator) / float(denominator)
@@ -64,7 +70,7 @@ class LanguageModel():
         
         prob_sum_logs = 0
         for syllable in tokens:
-            syllable_probability = self.unigram_probability(syllable)
+            syllable_probability = self._unigram_probability(syllable)
             prob_sum_logs += math.log(syllable_probability)
 
         perplexity = math.exp(-(prob_sum_logs / number_of_tokens))
@@ -79,7 +85,7 @@ class LanguageModel():
         prev = None
         for curr in tokens:
             if prev is not None:
-                syllable_probability = self.bigram_probability(prev, curr)
+                syllable_probability = self._bigram_probability(prev, curr)
                 prob_sum_logs += math.log(syllable_probability)
             prev = curr
         
@@ -96,7 +102,7 @@ class LanguageModel():
         
         for curr in tokens:
             if prev1 is not None and prev2 is not None:
-                syllable_probability = self.trigram_probability(prev1, prev2, curr)
+                syllable_probability = self._trigram_probability(prev1, prev2, curr)
                 prob_sum_logs += math.log(syllable_probability) 
             prev1, prev2 = prev2, curr
 

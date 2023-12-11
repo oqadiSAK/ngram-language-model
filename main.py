@@ -36,7 +36,9 @@ if __name__ == '__main__':
     else:
         preprocess(percentage=corpora_percentage)
         train_data, test_data = get_train_data(), get_test_data()
+        print("Getting tokens from train data...")
         train_tokens = train_data.split()
+        print("Getting sentences from test data...")
         sentences = test_data.split(r'</s>')
         language_model = LanguageModel(train_tokens)
         print("Calculating perplexity for test sentencess...")
