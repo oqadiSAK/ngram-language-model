@@ -1,6 +1,6 @@
 import argparse
+from utils.process import preprocess, postprocess, get_test_data, get_train_data
 from language_model import LanguageModel
-from utils.process import preprocess, postprocess
 
 def calculate_perplexity(model, sentences):    
     with open("output/perplexity_output.txt", "w", encoding='utf-8') as output_file:
@@ -15,10 +15,6 @@ def calculate_perplexity(model, sentences):
                 i += 1
     print("Perplexity is calculated for the test sentences. You can find it in output/perplexity_output.txt")
 
-def write_test_data(test_data):
-        with open("dataset/test_data", "w", encoding="utf-8") as f:
-            f.write(test_data)
-
 def random_sentence_generate(model, rounds=3):
     with open("output/random_sentences_output.txt", "w", encoding='utf-8') as output_file:
         for round_num in range(1, rounds + 1):
@@ -29,7 +25,6 @@ def random_sentence_generate(model, rounds=3):
     
     print("Random sentences with 5 syllables are created. You can find it in output/random_sentences_output.txt")
     
-    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process corpora based on a given percentage')
     parser.add_argument('--corpora-usage', type=int, help='Percentage of corpora to use (1-100)')
@@ -39,10 +34,12 @@ if __name__ == '__main__':
     if not (1 <= corpora_percentage <= 100):
         print("Please enter a valid percentage between 1 and 100.")
     else:
-        train_data, test_data = preprocess(percentage=corpora_percentage)
+        preprocess(percentage=corpora_percentage)
+        train_data, test_data = get_train_data(), get_test_data()
         train_tokens = train_data.split()
-        write_test_data(test_data)
         sentences = test_data.split(r'</s>')
         language_model = LanguageModel(train_tokens)
+        print("Calculating perplexity for test sentencess...")
         calculate_perplexity(language_model, sentences)
+        print("Creating random sentences with 5 syllables...")
         random_sentence_generate(language_model)

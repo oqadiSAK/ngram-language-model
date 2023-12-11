@@ -13,27 +13,37 @@ END_OF_WORD_V2 = " </w> "
 CORPORA_PATH = "dataset/wiki_00"
 TRAIN_PATH = "dataset/train_data"
 TEST_PATH = "dataset/test_data"
+TRAIN_OUTPUT_PATH = "output/train_processed_data"
+TEST_OUTPUT_PATH = "output/test_processed_data"
 TOTAL_NUMBER_OF_LINES = 4547965
 
 def preprocess(percentage=100):
     train_number_of_lines, test_number_of_lines = split_train_test(percentage)
-    processed_train_data = process_data(TRAIN_PATH, train_number_of_lines, "Preprocessing train data")
-    processed_test_data = process_data(TEST_PATH, test_number_of_lines, "Preprocessing test data")
-    return processed_train_data, processed_test_data
+    process_data(TRAIN_PATH, TRAIN_OUTPUT_PATH, train_number_of_lines, "Preprocessing train data")
+    process_data(TEST_PATH, TEST_OUTPUT_PATH, test_number_of_lines, "Preprocessing test data")
 
-def process_data(file_path, number_of_lines, description):
-    text = ''
-    with open(file_path, "r", encoding="utf-8") as f:
+def get_train_data():
+    with open(TRAIN_OUTPUT_PATH, "r", encoding="utf-8") as file:
+        train_text = file.read()
+    return train_text
+
+def get_test_data():
+    with open(TEST_OUTPUT_PATH, "r", encoding="utf-8") as file:
+        test_text = file.read()
+    return test_text
+
+def process_data(file_path, output_path, number_of_lines, description):
+    with open(file_path, "r", encoding="utf-8") as f, open(output_path, "w", encoding="utf-8") as output_file:
         for line_number, line in enumerate(tqdm(f, total=number_of_lines, desc=description), 1):
             if line.isspace() or line_number > number_of_lines:
                 continue
             
             line = line.strip()
-            text += syllabify_text(html2text(line).lower().rstrip())
-    
-    return text
+            text = syllabify_text(html2text(line).lower().rstrip())
+            output_file.write(text)
 
 def split_train_test(corpora_usage_percentage, test_percentage=5):
+    print("Splitting train and test data...")
     total_lines = int(TOTAL_NUMBER_OF_LINES * (corpora_usage_percentage / 100))
     test_lines_count = int(total_lines * test_percentage / 100)
     train_lines_count = total_lines - test_lines_count
