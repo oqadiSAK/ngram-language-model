@@ -3,7 +3,7 @@ from utils.process import preprocess, postprocess, get_test_data, get_train_data
 from language_model import LanguageModel
 
 def calculate_perplexity(model, sentences):    
-    with open("output/perplexity_output.txt", "w", encoding='utf-8') as output_file:
+    with open("output/perplexity_output", "w", encoding='utf-8') as output_file:
         i = 1
         for sentence in sentences:
             test_tokens = sentence.split()
@@ -13,17 +13,17 @@ def calculate_perplexity(model, sentences):
                 output_file.write("Bigram perplexity: {}\n".format(model.bigram_perplexity(test_tokens)))
                 output_file.write("Trigram perplexity: {}\n\n".format(model.trigram_perplexity(test_tokens)))  
                 i += 1
-    print("Perplexity is calculated for the test sentences. You can find it in output/perplexity_output.txt")
+    print("Perplexity is calculated for the test sentences. You can find it in output/perplexity_output")
 
 def random_sentence_generate(model, rounds=3):
-    with open("output/random_sentences_output.txt", "w", encoding='utf-8') as output_file:
+    with open("output/random_sentences_output", "w", encoding='utf-8') as output_file:
         for round_num in range(1, rounds + 1):
             output_file.write(f"Round {round_num}:\n")
             output_file.write(f"Unigram: {model.generate_random_sentence_unigram()}\n")
             output_file.write(f"Bigram: {model.generate_random_sentence_bigram()}\n")
             output_file.write(f"Trigram: {model.generate_random_sentence_trigram()}\n\n")
     
-    print("Random sentences with 5 syllables are created. You can find it in output/random_sentences_output.txt")
+    print("Random sentences with 5 syllables are created. You can find it in output/random_sentences_output")
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process corpora based on a given percentage')

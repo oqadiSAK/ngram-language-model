@@ -17,7 +17,7 @@ class LanguageModel():
         self.unigram_table = Counter(self.unigrams)
         self.unigram_count_occurrences = count_occurrences(self.unigram_table)
         self.unigram_frequencies, self.unigram_zero_counts = smoothing(self.unigram_count_occurrences, self.unigram_table)
-        with open('output/unigram_frequencies.txt', 'w', encoding='utf-8') as file:
+        with open('output/unigram_frequencies', 'w', encoding='utf-8') as file:
             for key, value in self.unigram_frequencies.items():
                 key_str = ', '.join(key)  
                 file.write(f'{key_str}: {value}\n')
@@ -27,7 +27,7 @@ class LanguageModel():
         self.bigram_table = Counter(self.bigrams)
         self.bigram_count_occurrences = count_occurrences(self.bigram_table)
         self.bigram_frequencies, self.bigram_zero_counts = smoothing(self.bigram_count_occurrences, self.bigram_table)
-        with open('output/bigram_frequencies.txt', 'w', encoding='utf-8') as file:
+        with open('output/bigram_frequencies', 'w', encoding='utf-8') as file:
             for key, value in self.bigram_frequencies.items():
                 key_str = ', '.join(key)  
                 file.write(f'{key_str}: {value}\n')
@@ -37,7 +37,7 @@ class LanguageModel():
         self.trigram_table = Counter(self.trigrams)
         self.trigram_count_occurrences = count_occurrences(self.trigram_table)
         self.trigram_frequencies, self.trigram_zero_counts = smoothing(self.trigram_count_occurrences, self.trigram_table)
-        with open('output/trigram_frequencies.txt', 'w', encoding='utf-8') as file:
+        with open('output/trigram_frequencies', 'w', encoding='utf-8') as file:
             for key, value in self.trigram_frequencies.items():
                 key_str = ', '.join(key)  
                 file.write(f'{key_str}: {value}\n')
