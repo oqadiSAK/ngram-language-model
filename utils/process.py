@@ -11,64 +11,59 @@ END_OF_SENTENCE = "</s>"
 END_OF_WORD = "</w>"
 END_OF_WORD_V2 = " </w> "
 CORPORA_PATH = "dataset/wiki_00"
+TRAIN_PATH = "dataset/train_data"
+TEST_PATH = "dataset/test_data"
 TOTAL_NUMBER_OF_LINES = 4547965
 
 def preprocess(percentage=100):
-    print("Preprocessing corpora...")
-    sentences = []
-    USED_NUMBER_OF_LINES = int((percentage / 100) * TOTAL_NUMBER_OF_LINES)
-    print("Total lines in file:", TOTAL_NUMBER_OF_LINES)
-    print("Used lines in file:", USED_NUMBER_OF_LINES)
-    
-    with open(CORPORA_PATH, "r", encoding="utf-8") as f:
-        for line_number, line in enumerate(tqdm(f, total=USED_NUMBER_OF_LINES), 1):
-            if line.isspace():
+    train_number_of_lines, test_number_of_lines = split_train_test(percentage)
+    processed_train_data = process_data(TRAIN_PATH, train_number_of_lines, "Preprocessing train data")
+    processed_test_data = process_data(TEST_PATH, test_number_of_lines, "Preprocessing test data")
+    return processed_train_data, processed_test_data
+
+def process_data(file_path, number_of_lines, description):
+    text = ''
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line_number, line in enumerate(tqdm(f, total=number_of_lines, desc=description), 1):
+            if line.isspace() or line_number > number_of_lines:
                 continue
             
-            if line_number > USED_NUMBER_OF_LINES:
-                break
-            
             line = line.strip()
-            text = html2text(line).lower()
-            text = text.rstrip()
-            sentences.extend(nltk.sent_tokenize(text))  
+            text += syllabify_text(html2text(line).lower().rstrip())
     
-    return split_data(sentences)
+    return text
 
-def split_data(sentences):
-    total_sentences = len(sentences)
-    test_sentences_count = max(1, total_sentences // 20)  
+def split_train_test(corpora_usage_percentage, test_percentage=5):
+    total_lines = int(TOTAL_NUMBER_OF_LINES * (corpora_usage_percentage / 100))
+    test_lines_count = int(total_lines * test_percentage / 100)
+    train_lines_count = total_lines - test_lines_count
 
-    test_sentences = sentences[-test_sentences_count:]  
-    train_sentences = sentences[:-test_sentences_count]  
+    with open(CORPORA_PATH, "r", encoding="utf-8") as file:
+        with open(TRAIN_PATH, "w", encoding="utf-8") as train_file:
+            with open(TEST_PATH, "w", encoding="utf-8") as test_file:
+                for line_number, line in enumerate(file, 1):
+                    if line_number <= train_lines_count:
+                        train_file.write(line)
+                    else:
+                        test_file.write(line)
+                        if line_number == total_lines:
+                            break
 
-    train_text = ''.join(train_sentences)
-    test_text = ''.join(test_sentences)
-    
-    train_syllabified = syllabify_text(train_text, process_name="Syllabifying train text")
-    test_syllabified = syllabify_text(test_text, process_name="Syllabifying test text")
-    
-    # print_head_and_tail(train_syllabified, train_text)
-    
-    return train_syllabified, test_syllabified
-    
-def syllabify_text(text, process_name="Processing"):
+    return train_lines_count, test_lines_count
+        
+def syllabify_text(text):
     words = WORD_SPLIT_PATTERN.findall(text)
-    syllabified_text = END_OF_SENTENCE + ' '
-    total_words = len(words)
-    
-    with tqdm(total=total_words, desc=process_name) as pbar:
-        for word in words:
-            if word.isalpha():
-                syllables = syllabify(word)
-                syllabified_text += syllables + END_OF_WORD_V2
-            elif word in END_OF_SENTENCE_MARKS:
-                last_occurrence = syllabified_text.rfind(END_OF_WORD_V2)
-                if last_occurrence != -1:
-                    syllabified_text = syllabified_text[:last_occurrence] + ' ' + END_OF_SENTENCE + ' '
-            
-            pbar.update(1)
-    
+    syllabified_text = ''
+
+    for word in words:
+        if word.isalpha():
+            syllables = syllabify(word)
+            syllabified_text += syllables + END_OF_WORD_V2
+        elif word in END_OF_SENTENCE_MARKS:
+            last_occurrence = syllabified_text.rfind(END_OF_WORD_V2)
+            if last_occurrence != -1:
+                syllabified_text = syllabified_text[:last_occurrence] + ' ' + END_OF_SENTENCE + ' '
+
     return syllabified_text
 
 def postprocess(tokens):
@@ -77,11 +72,3 @@ def postprocess(tokens):
     processed_text = processed_text.replace('</s>', '')
     processed_text = processed_text.replace('</w>', ' ')
     return processed_text
-
-    
-def print_head_and_tail(syllabified_text, clean_text):
-    head_length = 1000
-    tail_length = 500
-    print(syllabified_text[:head_length] + "..." + syllabified_text[-tail_length:])
-    print("====================================================")
-    print(clean_text[:head_length] + "..." + clean_text[-tail_length:])
